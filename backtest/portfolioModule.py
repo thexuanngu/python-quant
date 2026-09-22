@@ -9,9 +9,9 @@ class Portfolio:
     multi-year backtest, that's O(n) realloc churn for no reason."""
     def __init__(self, config: BacktestConfig, n_bars: int, rebalanceFreq):
         self.nBars_ = n_bars # Number of timesteps the backtest will run for
-        self.nBars_ = n_bars # How frequently the portfolio should aim to rebalance
+        self.rebalanceFreq_ = rebalanceFreq # How frequently the portfolio should aim to rebalance
         self.config = config
-        self.cash = config.initial_capital
+        self.cash = config.capital_
         self.position = 0.0
         self._equity = np.empty(n_bars, dtype=np.float64)
         self._equity[:] = np.nan
