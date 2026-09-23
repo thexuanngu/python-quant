@@ -1,13 +1,23 @@
-# I.e., will the simulation be event-driven
-# Can have the simulation be vectorized for simpler signal testing 
+from dataclasses import dataclass
+from datetime import date
 
-# TODO: Monte Carlo Path Generator?
-import dataclasses
 
+@dataclass(frozen=True)
 class BacktestConfig:
-    def __init__(self, iterations, capital, fees, dates, seed):
-        self.seed_       = seed # the random seed
-        self.iterations_ = iterations # number of iterations
-        self.capital_    = capital # starting capital
-        self.fees_       = fees # transaction costs
-        self.dates_      = dates # date range of simulation
+    """Immutable, loggable record of every knob for one run. Frozen so a run
+    can never be silently mutated mid-execution — log this object alongside
+    results so every equity curve is reproducible from its config.
+
+    This is the ONLY place these parameters live. Don't duplicate any of
+    these fields as constructor args on Portfolio/DataModule/etc. — they
+    should all just take `config` and read from it.
+    """
+    start_date: date
+    end_date: date
+    initial_capital: float = 1_000_000.0
+    rebalance_freq: str = "1D"
+    max_leverage: float = 1.0
+    fee_bps: float = 1.0
+    slippage_bps: float = 0.5
+    n_simulations: int = 1          # >1 triggers a ScenarioRunner, not the Strategy
+    seed: int | None = None

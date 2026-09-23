@@ -1,17 +1,17 @@
-# portfolioModule.py
-from dataclasses import dataclass
 import numpy as np
 from backtestConfig import BacktestConfig
+from interfaces import PortfolioBase
 
-class Portfolio:
+
+class Portfolio(PortfolioBase):
     """Stateful ledger, mutated once per bar inside the event loop.
     Preallocate arrays — don't append to a list/Series every bar in a
     multi-year backtest, that's O(n) realloc churn for no reason."""
-    def __init__(self, config: BacktestConfig, n_bars: int, rebalanceFreq):
-        self.nBars_ = n_bars # Number of timesteps the backtest will run for
-        self.rebalanceFreq_ = rebalanceFreq # How frequently the portfolio should aim to rebalance
+
+    def __init__(self, config: BacktestConfig, n_bars: int):
         self.config = config
-        self.cash = config.capital_
+        self.n_bars_ = n_bars          # length of THIS run, derived from loaded data
+        self.cash = config.initial_capital
         self.position = 0.0
         self._equity = np.empty(n_bars, dtype=np.float64)
         self._equity[:] = np.nan
