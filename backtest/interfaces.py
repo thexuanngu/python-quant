@@ -5,7 +5,7 @@ import pandas as pd
 class StrategyBase(ABC):
     @abstractmethod
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
-        """Return target positions/signals indexed like `data`. No lookahead."""
+        """Return target positions/signals indexed like `data`."""
 
 
 class ExecutionModelBase(ABC):

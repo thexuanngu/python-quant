@@ -38,3 +38,7 @@ I'll need to review all of the 'scaffolding' changes that Claude had provided, b
 1. Implementing `DataSource.preprocess_data` and `DataModule.data_load` 
 2. Write one `SMACrossover(Strategy)` subclass
 3. Write the event loop in `BacktestEngine.run()`
+
+# 09/24/2026
+
+It is late, and the 'big' picture in my mind is cloudy--over the weekend I'll come back to this and start with fleshing out the `DataModule` methods.

@@ -5,8 +5,7 @@ from interfaces import PortfolioBase
 
 class Portfolio(PortfolioBase):
     """Stateful ledger, mutated once per bar inside the event loop.
-    Preallocate arrays — don't append to a list/Series every bar in a
-    multi-year backtest, that's O(n) realloc churn for no reason."""
+    Preallocate arrays"""
 
     def __init__(self, config: BacktestConfig, n_bars: int):
         self.config = config
