@@ -42,3 +42,10 @@ I'll need to review all of the 'scaffolding' changes that Claude had provided, b
 # 09/24/2026
 
 It is late, and the 'big' picture in my mind is cloudy--over the weekend I'll come back to this and start with fleshing out the `DataModule` methods.
+
+# 09/25/2026
+Watching a video on algorithmic trading to refresh and actually hear how 'algorithmic' trading is meant to be conducted. I think this video will be a good compliment to this substack: https://akhaldoun.substack.com/p/the-only-way-to-become-a-good-quant
+
+- Statistical Edge: $\mathbb E [X]$
+
+I have the scaffold in place, now I'm going to map it out on my iPad
