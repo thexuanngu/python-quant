@@ -5,12 +5,14 @@ class StrategyBase(ABC):
     @abstractmethod
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
         """Return target positions/signals indexed like `data`."""
+        pass
 
 
 class ExecutionModelBase(ABC):
     @abstractmethod
     def fill(self, order_size: float, price: float, adv: float) -> tuple[float, float]:
         """Return (fill_price, realized_cost) given order size and avg daily volume."""
+        pass
 
 
 class PortfolioBase(ABC):

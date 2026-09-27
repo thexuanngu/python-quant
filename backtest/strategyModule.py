@@ -12,6 +12,38 @@ class Strategy(StrategyBase):
 
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
         raise NotImplementedError  # implement in a subclass, e.g. SMACrossover(Strategy)
+    
+# Most basic strategy: Simple Moving Average
+class SMA(Strategy):
+    def __init__(self, window: int, threshold: float):
+        super().__init__(f"SMA({window})")
+        self.window = window  # The lookback period
+        self.threshold = threshold  # The percentage of the SMA
+        
+    def generate_signals(self, data: pd.DataFrame) -> pd.Series:
+        price = data.target
+        sma   = price.copy().shift(1).rolling(self.window).mean()
+        # TODO: In the future, I can specify WHAT trading signal it is (Buy/Sell) -> for now, true should suffice
+        return price >= sma * (1 + self.threshold) | price <= sma * (1 - self.threshold) 
+        
+class SMACrossover(Strategy):
+    def __init__(self, slowWindow: int, fastWindow: int):
+            super().__init__(f"SMAC({slowWindow, fastWindow})")
+            self.fastWindow = fastWindow  # The short period
+            self.slowWindow = slowWindow  # The long period
+            
+    def generate_signals(self, data: pd.DataFrame) -> pd.Series:
+        price = data["target"]
+
+        fast = price.shift(1).rolling(self.fastWindow).mean()
+        slow = price.shift(1).rolling(self.slowWindow).mean()
+
+        return fast > slow
+        # More 'complicated' signal
+        # cross_up = (fast > slow) & (fast.shift(1) <= slow.shift(1))
+        # cross_down = (fast < slow) & (fast.shift(1) >= slow.shift(1))
+    
+    
 
 
 class StrategyModule:

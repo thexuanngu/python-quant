@@ -49,3 +49,9 @@ Watching a video on algorithmic trading to refresh and actually hear how 'algori
 - Statistical Edge: $\mathbb E [X]$
 
 I have the scaffold in place, now I'm going to map it out on my iPad
+
+# 09/26/2026
+A ROUGH version of a Simple Moving Average (SMA) strategy and SMACrossover are now in place.
+- SMACrossover works by considering SMAs of two different window lengths. 
+    - If the short-term (`fastWindow`) rises above the long-term (`slowWindow`), then the momentum is positive (and vice versa) -> The crossover is when the 
+    - The crossover is when the relationship changes: i.e., if momentum is positive, but the short period SMA dips below the long period SMA -> Indication to BUY (as you would expect the price to go back up)

@@ -5,7 +5,7 @@ from backtest.interfaces import DataSourceBase
 
 class DataSource(DataSourceBase):
     def __init__(self, source: str, nature: str, yfTickers: list[str]):
-        self.source = source  # e.g. "yfinance", "static_csv", "live"
+        self.source = source  # e.g. "yfinance", "'static.csv'", "live"
         self.nature = nature  # e.g. "historical", "live"
         self.yfTickers = yfTickers  # e.g. for the yfinance 'download' method
 
@@ -16,6 +16,9 @@ class DataSource(DataSourceBase):
         # or silently let through. Don't skip this once real data is wired in.
         
         # Basic preprocessing for now
+        if self.source == "yfinance":
+            print(data.columns)
+            data.rename(columns={'close':'target'}, inplace=True)    
         return data
         
         raise NotImplementedError
