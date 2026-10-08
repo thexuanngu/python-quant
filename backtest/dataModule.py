@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-from backtest.interfaces import DataSourceBase
+from interfaces import DataSourceBase
 
 
 class DataSource(DataSourceBase):
@@ -17,27 +17,24 @@ class DataSource(DataSourceBase):
         
         # Basic preprocessing for now
         if self.source == "yfinance":
-            print(data.columns)
-            data.rename(columns={'close':'target'}, inplace=True)    
+            data.rename(columns={'close':'target'}, inplace=True)
         return data
-        
-        raise NotImplementedError
 
 
 class DataModule:
     def __init__(self, dataSource: DataSource):
         self.dataSource = dataSource
 
-    def load(self, start_date, end_date, freq: str) -> pd.DataFrame:
+    def load(self, start_date, end_date, freq: str) -> pd.DataFrame | None:
         # TODO: fetch raw data from self.dataSource, then run it through
         # self.dataSource.preprocess_data(raw) before returning.
-        try: 
+        try:
             if (self.dataSource.source == "yfinance"):  # just a call to the download
                 print("Fetching yfinance price data")  # NOTE: yfinance doesn't support intraday data beyond the last 60 days
                 raw = yf.download(tickers=self.dataSource.yfTickers, 
                                 start=start_date, 
                                 end=end_date,
-                                interval=freq)
+                                interval=freq.lower())
                 if (len(self.dataSource.yfTickers) > 1):
                     raw = raw.stack(future_stack=True)  # Stack multi-level columns ('Adj Close', 'Close', etc.) into rows
                     raw.index.names = ['date', 'ticker']  # optional index renaming here
@@ -45,8 +42,6 @@ class DataModule:
                 
                 # the user can choose to save the data here if they would like -> won't implement for now
                 return self.dataSource.preprocess_data(raw)
-            else:  # handle other data cases later
-                return pd.DataFrame()
                 
         except Exception as e:
             print(f"Error fetching price data from yfinance: {e}")

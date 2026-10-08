@@ -11,7 +11,7 @@ class BacktestConfig:
     start_date:      date
     end_date:        date
     initial_capital: float = 1_000_000.0
-    rebalance_freq:  str = "1D"
+    rebalance_freq:  str = "1D"  # This Pandas formatting
     max_leverage:    float = 1.0
     fee_bps:         float = 1.0
     slippage_bps:    float = 0.5

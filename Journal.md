@@ -55,3 +55,6 @@ A ROUGH version of a Simple Moving Average (SMA) strategy and SMACrossover are n
 - SMACrossover works by considering SMAs of two different window lengths. 
     - If the short-term (`fastWindow`) rises above the long-term (`slowWindow`), then the momentum is positive (and vice versa) -> The crossover is when the 
     - The crossover is when the relationship changes: i.e., if momentum is positive, but the short period SMA dips below the long period SMA -> Indication to BUY (as you would expect the price to go back up)
+
+# 10/08/2026
+- An event-driven loop is important for trading strategies that are 'state-dependent', but if the strategy is based on a simple moving average, then doing a vectorized precomputation is more efficient
