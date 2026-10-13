@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from interfaces import StrategyBase
 
 
@@ -48,8 +49,10 @@ class SMACrossover(Strategy):
         signals[(fast > slow) & (price <= fast * (1 - self.threshold)) ] = 1  # momentum is positive, but price has dipped below
         signals[(fast < slow) & (price >= fast * (1 + self.threshold)) ] = -1  # momentum is negative, but price has gone above buy threshold
 
+        signals = signals.replace(0, np.nan).ffill().fillna(0).astype(int)
+
         return signals
-    
+
 class StrategyModule:
     """Holds one or more strategies to run. Runs fine with a single
     strategy in the list — don't reach for multi-strategy blending until
