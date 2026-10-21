@@ -18,34 +18,29 @@ class DataSource(DataSourceBase):
         # Basic preprocessing for now
         if self.source == "yfinance":
             data.rename(columns={'close':'target'}, inplace=True)
-        return data
+            return data
+        raise ValueError("Currently unsupported data source")
 
 
 class DataModule:
     def __init__(self, dataSource: DataSource):
         self.dataSource = dataSource
 
-    def load(self, start_date, end_date, freq: str) -> pd.DataFrame | None:
-        # TODO: fetch raw data from self.dataSource, then run it through
-        # self.dataSource.preprocess_data(raw) before returning.
-        try:
-            if (self.dataSource.source == "yfinance"):  # just a call to the download
-                print("Fetching yfinance price data")  # NOTE: yfinance doesn't support intraday data beyond the last 60 days
-                raw = yf.download(tickers=self.dataSource.yfTickers, 
-                                start=start_date, 
-                                end=end_date,
-                                interval=freq.lower())
-                if (len(self.dataSource.yfTickers) > 1):
-                    raw = raw.stack(future_stack=True)  # Stack multi-level columns ('Adj Close', 'Close', etc.) into rows
-                    raw.index.names = ['date', 'ticker']  # optional index renaming here
-                raw.columns = [col.lower().replace(' ', '_') for col in raw.columns]
-                
-                # the user can choose to save the data here if they would like -> won't implement for now
-                return self.dataSource.preprocess_data(raw)
-                
-        except Exception as e:
-            print(f"Error fetching price data from yfinance: {e}")
-            return pd.DataFrame()
+    def load(self, start_date, end_date, freq: str) -> pd.DataFrame:
+        ds = self.dataSource
+        if ds.source != "yfinance":
+            raise NotImplementedError(f"Unsupported source: {ds.source}")
+        if len(ds.yfTickers) != 1:
+            raise NotImplementedError("MVP is single-ticker; rolling ops need groupby for multi.")
+
+        raw = yf.download(tickers=ds.yfTickers, start=start_date, end=end_date,
+                          interval=freq.lower(), auto_adjust=True, progress=False)
+        if raw.empty:
+            raise ValueError(f"No data returned for {ds.yfTickers} {start_date}->{end_date}")
+        if isinstance(raw.columns, pd.MultiIndex):
+            raw.columns = raw.columns.get_level_values(0)  # drop the ticker level
+        raw.columns = [c.lower().replace(" ", "_") for c in raw.columns]
+        return ds.preprocess_data(raw)
         
         
             

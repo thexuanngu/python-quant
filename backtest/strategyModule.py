@@ -20,27 +20,32 @@ class SMA(Strategy):
         super().__init__(f"SMA({window})")
         self.window = window  # The lookback period
         self.threshold = threshold  # The percentage of the SMA
-
         
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
-        price = data.target
+        price = data['target']
         sma   = price.copy().shift(1).rolling(self.window).mean()
         signals = pd.Series(0, index=price.index)
         signals[price >= sma * (1 + self.threshold)] = -1  # sell
         signals[price <= sma * (1 - self.threshold)] = 1   # buy
 
+        # exit strategy
+
+
+        signals = signals.replace(0, np.nan).ffill().fillna(0).astype(int)
+
         return signals
         
-class SMACrossover(Strategy):
+class TrendPullback(Strategy):
     def __init__(self, slowWindow: int, fastWindow: int, threshold: float):
-            super().__init__(f"SMAC({slowWindow, fastWindow})")
+            super().__init__(f"SMAC{slowWindow, fastWindow}")
+            if fastWindow >= slowWindow: raise ValueError("fastWindow must be less than slowWindow")
             self.fastWindow = fastWindow  # The short period
             self.slowWindow = slowWindow  # The long period
             self.threshold = threshold  # The percentage of the SMA
 
             
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
-        price = data.target
+        price = data['target']
 
         fast = price.shift(1).rolling(self.fastWindow).mean()
         slow = price.shift(1).rolling(self.slowWindow).mean()
@@ -52,6 +57,8 @@ class SMACrossover(Strategy):
         signals = signals.replace(0, np.nan).ffill().fillna(0).astype(int)
 
         return signals
+
+# --- Strategy Orchestrator --- #
 
 class StrategyModule:
     """Holds one or more strategies to run. Runs fine with a single

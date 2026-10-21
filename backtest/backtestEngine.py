@@ -29,12 +29,11 @@ class BacktestEngine:
 
         # TODO: the actual event loop.
         for t, price in enumerate(prices):
-            signal = self.strategyModule_.strategies[0].generate_signals(prices)
+            signals = self.strategyModule_.strategies[0].generate_signals(prices)
+            positions = signals.shift(1).fillna(0)
             fill_price, cost = self.executionModule_.fill(order_size, price, adv=...)
             self.portfolio.apply_fill(fill_price, order_size)
             self.portfolio.mark_to_market(price)
-        
-        
         
         raise NotImplementedError
 
