@@ -58,3 +58,6 @@ A ROUGH version of a Simple Moving Average (SMA) strategy and SMACrossover are n
 
 # 10/08/2026
 - An event-driven loop is important for trading strategies that are 'state-dependent', but if the strategy is based on a simple moving average, then doing a vectorized precomputation is more efficient
+
+# 10/22/2026
+- QuantGuild is going to be my new 'brainrot' (but in reality it's going to be useful ideas and notes for my project here). I need a MVP, and right now, I'll focus on making my more technical notes on my Notion. That being said some useful concepts that I learned from his portfolio construction video was volatility drag (i.e., the $1/2\sigma^2$ from Ito), diversification (duh), Max drawdown, and physical decorrelation. There's (of course) different types of risk, and the goal of portfolio construction/management is to "hold out and survive" to let the compounding do the growth for us; there isn't a lottery ticket strategy that can produce astronomical returns without catastrophic risks—"there is no free lunch"

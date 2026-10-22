@@ -8,6 +8,9 @@ from strategyModule import StrategyModule
 from resultsModule import ResultsModule
 import vizModule
 
+# TODO: Add Stop Loss
+# TODO: Handle execution logic
+# TODO: account for margin/borrow costs
 
 class BacktestEngine:
     def __init__(self, config: BacktestConfig, dataModule: DataModule,
