@@ -14,10 +14,10 @@ class Strategy(StrategyBase):
     def generate_signals(self, data: pd.DataFrame) -> pd.Series:
         raise NotImplementedError  # implement in a subclass, e.g. SMACrossover(Strategy)
     
-# Most basic strategy: Simple Moving Average
+# basic strategy: Simple Moving Average
 class SMA(Strategy):
     def __init__(self, window: int, threshold: float):
-        if threshold <= 0: raise ValueError("threshold cannot be negative")
+        if threshold <= 0: raise ValueError("threshold must be positive")
         
         super().__init__(f"SMA({window})")
         self.window = window  # The lookback period
@@ -41,7 +41,7 @@ class SMA(Strategy):
 class TrendPullback(Strategy):
     def __init__(self, slowWindow: int, fastWindow: int, threshold: float):
             if fastWindow >= slowWindow: raise ValueError("fastWindow must be less than slowWindow")
-            if threshold <= 0: raise ValueError("threshold cannot be negative")
+            if threshold <= 0: raise ValueError("threshold must be positive")
             
             super().__init__(f"SMAC{slowWindow, fastWindow}")
             self.fastWindow = fastWindow  # The short period
@@ -58,13 +58,14 @@ class TrendPullback(Strategy):
         
         long_leg = nan.copy()
         # momentum is positive, but price has dipped below
+        # gate regimes, not exits
         long_leg[(fast > slow) & (price <= fast * (1 - self.threshold)) ] = 1  # enter long position
-        long_leg[(fast > slow) & (price >= fast)                        ] = 0  # exit long position
+        long_leg[price >= fast                                          ] = 0  # exit long position
         
         short_leg = nan.copy()
         # momentum is negative, but price has gone above buy threshold
         short_leg[(fast < slow) & (price >= fast * (1 + self.threshold)) ] = 1  # enter short position
-        short_leg[(fast < slow) & (price <= fast)                        ] = 0  # exit long position
+        short_leg[price <= fast                                          ] = 0  # exit long position
 
         return (long_leg.ffill().fillna(0) - short_leg.ffill().fillna(0)).astype(int)
 

@@ -6,7 +6,9 @@ from dataModule import DataModule
 from executionModule import ExecutionModule
 from strategyModule import StrategyModule
 from resultsModule import ResultsModule
-import vizModule
+# import vizModule
+
+import pandas as pd
 
 # TODO: Add Stop Loss
 # TODO: Handle execution logic
@@ -25,20 +27,27 @@ class BacktestEngine:
         self.portfolio = None  # constructed in run(), once we know n_bars from real data
 
     def run(self):
-        prices = self.dataModule_.load(
-            self.config.start_date, self.config.end_date, self.config.rebalance_freq
-        )
-        self.portfolio = Portfolio(self.config, n_bars=len(prices))
-
-        # TODO: the actual event loop.
-        for t, price in enumerate(prices):
-            signals = self.strategyModule_.strategies[0].generate_signals(prices)
-            positions = signals.shift(1).fillna(0)
-            fill_price, cost = self.executionModule_.fill(order_size, price, adv=...)
-            self.portfolio.apply_fill(fill_price, order_size)
-            self.portfolio.mark_to_market(price)
+        c = self.config
+        prices = self.dataModule_.load(c.start_date, c.end_date, c.rebalance_freq)
+        px = prices['target'].to_numpy(np.float64)
+        self.portfolio = pf = Portfolio(c, n_bars=len(px))
         
-        raise NotImplementedError
+        # precomputation (happens once)
+        signals = self.strategyModule_.strategies[0].generate_signals(prices)
+        target  = signals.shift(1).fillna(0).to_numpy(np.float64)  # positions we want to maintain
+        adv     = prices["volume"].shift(1).rolling(20).mean().to_numpy()
+        
+        prev = 0  # start off in "flat" position
+        for t in range(len(px)):
+            if target[t] != prev:
+                units = target[t] * c.max_leverage * pf.equity(px[t]) / px[t]
+                order = units - pf.position
+            
+                fill_price, cost = self.executionModule_.fill(order, px[t], adv[t])
+                self.portfolio.apply_fill(fill_price, order, cost)
+                prev = target[t]
+            self.portfolio.mark_to_market(px[t])
+        return pd.Series(pf.equity_curve, index=prices.index)
 
 
 class ScenarioRunner:

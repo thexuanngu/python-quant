@@ -16,21 +16,24 @@ class Portfolio(PortfolioBase):
         self._equity[:] = np.nan
         self._t = 0
 
-    def apply_fill(self, fill_price: float, fill_qty: float) -> None:
-        self.cash -= fill_price * fill_qty
+    def apply_fill(self, fill_price: float, fill_qty: float, cost: float = 0.0) -> None:
+        self.cash -= fill_price * fill_qty + cost
         self.position += fill_qty
 
     def mark_to_market(self, price: float) -> float:
-        equity = self.cash + self.position * price
+        equity = self.equity(price)
         self._equity[self._t] = equity
         self._t += 1
         return equity
+    
+    def equity(self, price: float) -> float:
+        return self.cash + self.position * price  # cash + stock
+
 
     @property
     def equity_curve(self) -> np.ndarray:
         return self._equity[: self._t]
 
-    @property
-    def leverage(self) -> float:
+    def leverage(self, price) -> float:
         # exposure vs equity — cheap running risk check, no need to wait for resultsModule
-        return abs(self.position) / self._equity[self._t - 1] if self._t else 0.0
+        return abs(self.position * price) / self._equity[self._t - 1] if self._t else 0.0
