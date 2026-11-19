@@ -1,11 +1,12 @@
 from interfaces import ExecutionModelBase
 import numpy as np
 
+#TODO: Incorporate ADV, close plus slippage in bps, spread into the price
+#TODO: [Costs] fees and slippage; borrow costs, financing, dividends, and corporate actions
 
 # class TransactionCost:
 #     def __init__(self, feeType: str):
 #         self.feeType = feeType  # "flat" or "percentage"
-
 
 # class ExecutionModule(ExecutionModelBase):
 #     def __init__(self, transactionCost: TransactionCost, priceImpact=None):
@@ -15,8 +16,8 @@ import numpy as np
 # 1e-4 to correctly convert it into a decimal
 class ExecutionModule(ExecutionModelBase):
     def __init__(self, fee_bps: float, slippage_bps: float):
+        # fee -> trading cost | slippage -> 'price' impact (actual traded price)
         self.fee, self.slip = fee_bps * 1e-4, slippage_bps * 1e-4
-
 
     def fill(self, order_size: float, price: float, adv: float) -> tuple[float, float]:
         # TODO: apply self.transactionCost, then self.priceImpact (if set)

@@ -1,53 +1,80 @@
 import numpy as np
+import pandas as pd
 
 from backtestConfig import BacktestConfig
 from portfolioModule import Portfolio
-from dataModule import DataModule
+from dataModule import DataModule, CachedData
 from executionModule import ExecutionModule
-from strategyModule import StrategyModule
+from strategyModule import StrategyModule, SingleWindowStrategy
 from resultsModule import ResultsModule
 # import vizModule
 
-import pandas as pd
 
 # TODO: Add Stop Loss
 # TODO: Handle execution logic
-# TODO: account for margin/borrow costs
+# TODO: account for margin/borrow costs, short-sale constraints
+# TODO: Intraday execution and latency
+# TODO: Multiple assets and portfolio-level risk allocation
+# TODO: Corporate-action cash-flow accounting
+# TODO: More sophisticated order types and execution algorithms
 
 class BacktestEngine:
-    def __init__(self, config: BacktestConfig, dataModule: DataModule,
+    def __init__(self, config: BacktestConfig, dataModule: DataModule | CachedData,
                  strategyModule: StrategyModule, executionModule: ExecutionModule,
-                 resultsModule: ResultsModule, vizModule):
+                 resultsModule: ResultsModule):
         self.config = config
         self.dataModule_ = dataModule
         self.strategyModule_ = strategyModule
         self.executionModule_ = executionModule
         self.resultsModule_ = resultsModule
-        self.vizModule_ = vizModule
-        self.portfolio = None  # constructed in run(), once we know n_bars from real data
+        # self.vizModule_ = vizModule
+        # self.portfolio = None  # constructed in run(), once we know n_bars from real data
 
     def run(self):
+        # initialisation of data and portfolio
         c = self.config
         prices = self.dataModule_.load(c.start_date, c.end_date, c.rebalance_freq)
-        px = prices['target'].to_numpy(np.float64)
-        self.portfolio = pf = Portfolio(c, n_bars=len(px))
+        px = prices['target'].to_numpy(np.float64)  # TODO: In the future, expand to multiple targets
+        self.portfolio = pf = Portfolio(c, n_bars=len(px)) # TODO: Learn interaction between portfolio and multiple strategies
         
-        # precomputation (happens once)
-        signals = self.strategyModule_.strategies[0].generate_signals(prices)
-        target  = signals.shift(1).fillna(0).to_numpy(np.float64)  # positions we want to maintain
-        adv     = prices["volume"].shift(1).rolling(20).mean().to_numpy()
+        # precompute signals here -> in the future, add some condition
+        test_strat = self.strategyModule_.strategies[0]  # TODO: Expand to incorporate multiple strategies
+        signals = test_strat.generate_signals(prices).shift(1).fillna(0).to_numpy()
+        adv = prices['volume'].shift(1).rolling(window=  # TODO: In the future, make more generalizable
+                                                test_strat.window if isinstance(test_strat, SingleWindowStrategy) 
+                                                else 20).mean().to_numpy()
+        prev = 0  # prev. position/signal
+        self.trades = []  # log trades TODO: This could be used in ML models 
         
-        prev = 0  # start off in "flat" position
-        for t in range(len(px)):
-            if target[t] != prev:
-                units = target[t] * c.max_leverage * pf.equity(px[t]) / px[t]
-                order = units - pf.position
-            
-                fill_price, cost = self.executionModule_.fill(order, px[t], adv[t])
-                self.portfolio.apply_fill(fill_price, order, cost)
-                prev = target[t]
-            self.portfolio.mark_to_market(px[t])
+        for t in range(len(px)):  # iterate through time
+            # check if we have to liquidate position first
+            risk = abs(pf.position) * px[t]
+            if risk > 0 and pf.equity(px[t]) < c.maintenance_margin * risk:
+                self._trade(t, -pf.position, px[t], adv[t], "margin_liquidation")
+                pf.cash = max(pf.cash, 0.0)  # broker will absorb all losses
+                
+            # there's been a signal change -> change position
+            if prev != signals[t]:
+                # size position
+                units = signals[t] * c.max_leverage * max(pf.equity(px[t]), 0.0) / px[t]
+                # trade position
+                self._trade(t, units - pf.position, px[t], adv[t], "signal")
+                # update current position
+                prev = signals[t]  # update current position
+            # build equity curve
+            pf.mark_to_market(px[t])
+        
+        # return equity curve
         return pd.Series(pf.equity_curve, index=prices.index)
+    
+    def _trade(self, t, order, price, adv, reason):
+            if order != 0:  
+                fill_price, cost = self.executionModule_.fill(order, price, adv)
+                self.portfolio.apply_fill(fill_price, order, cost)  # update portfolio
+                self.trades.append((t, reason, order, fill_price, cost))  # update log
+    
+    def display_results(self, equity_curve: pd.Series, warmup: int = 0):
+        self.resultsModule_.print_metrics(equity_curve, warmup)
 
 
 class ScenarioRunner:

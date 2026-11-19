@@ -61,3 +61,34 @@ A ROUGH version of a Simple Moving Average (SMA) strategy and SMACrossover are n
 
 # 10/22/2026
 - QuantGuild is going to be my new 'brainrot' (but in reality it's going to be useful ideas and notes for my project here). I need a MVP, and right now, I'll focus on making my more technical notes on my Notion. That being said some useful concepts that I learned from his portfolio construction video was volatility drag (i.e., the $1/2\sigma^2$ from Ito), diversification (duh), Max drawdown, and physical decorrelation. There's (of course) different types of risk, and the goal of portfolio construction/management is to "hold out and survive" to let the compounding do the growth for us; there isn't a lottery ticket strategy that can produce astronomical returns without catastrophic risks—"there is no free lunch"
+
+# 11/9/2026
+- Back on the portfolio grind—this time with an increased willingness to adopt AI. I would argue that it could detract from my learning, but I have to be intentional in implementing it as a tool and, importantly, learning how to debug. This will likely help prepare me more closely for the type of work I will inevitably be conducting.
+
+# 13/9/2026
+A MVP has been produced. Problem is now I want to be able to extract insights from it. On top of understanding the functions inside `portfolio_analytics.py` I also need to
+- [ ]  Implement a margin model
+
+# 14/9/2026
+- Again, I need to become more intentional of how I incorporate AI into my workflow. Next step—finish some more of the implementation bugs from earlier, then slowly go through my code once more to ensure everything works. Afterwards, follow the roadmap and continue making progress there. There's been a few mantras I needed to follow, but for every function, I should
+1. Predict what's going to happen
+2. Run the method
+3. Explain it line by line WITHOUT looking
+4. Break an assumption and state what should happen
+5. Write a property test
+
+The remaining gaps (in order):
+1. Correctness and risk: margin and ruin; leverage drift; borrow costs and dividends
+2. Validation: a benchmark, a trade log, a holdout/walk-forward (walk forward validation), a deflated sharpe over trials
+3. Realism: next-open fills, spread plus impact using adv, and a capacity curve
+4. Strucutre: a multi-asset portfolio layer, caches data, logged configs
+
+Checkable Exit List (Part 1.)
+[ ] Margin guard in, with all 20 tests green
+[ ] Buy-and-hold benchmark row beside every strategy
+[ ] The grid saved as a table, with trade counts and a ruined flag
+[ ] A Sharpe error bar and a deflated Sharpe over the grid
+[ ] A holdout period you look at once
+[ ] Cost sensitivity (0 / 1 / 5 / 10 bps) and lag sensitivity (1 / 2 / 3 bars)
+[ ] Best and worst 10 trades read by hand, from the trade log
+[ ] One page covering the hypothesis, simplifications, findings and your strongest attack on your own result, using your existing log files
